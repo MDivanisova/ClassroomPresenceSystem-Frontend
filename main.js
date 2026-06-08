@@ -23,7 +23,7 @@ if(document.getElementById("loginButton")){
             )
             );
             const users = await getAllUsers();
-            console.log(users);
+            
             if(users.users){
                 await renderContent();
             }

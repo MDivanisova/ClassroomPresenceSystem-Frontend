@@ -8,42 +8,176 @@ body{
     height: 100vh;
 }
 
-.leftChild{
-    background-color: blue;
-    width: 20%;
-}
 
-.rightChild{
-    background-color: white;
+/* rightChild layout */
+.rightChild {
+    display: flex;
     width: 80%;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: white;
 }
 
-.menu{
-
+/* Login card */
+.rightChild form {
+    background-color: #1e1e2e;
+    padding: 40px 36px;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
-.selected{
-    color: white;
-
+/* LOGIN title label */
+.rightChild form > label:first-child {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
 }
 
-#logOut{
-
+/* Field labels */
+.rightChild form label {
+    color: #aaa;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-
-.menu > ul > li{
-
+/* Inputs */
+.rightChild form input {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid #2e2e3e;
+    background-color: #13131f;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
 }
 
-.picture{
-
+.rightChild form input:focus {
+    border-color: #6c63ff;
 }
 
-.buttonWraper{
-    
-}
-
-.menu > ul > li:hover{
+/* Login button */
+.rightChild form button#loginButton {
+    margin-top: 8px;
+    padding: 12px;
+    background-color: #6c63ff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
     cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.rightChild form button#loginButton:hover {
+    background-color: #574fd6;
+}
+
+/* Error message */
+#loginError {
+    color: #ff6b6b;
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 12px;
+    min-height: 20px;
+}
+
+
+/* leftChild layout */
+.leftChild {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+    gap: 24px;
+    height: 100vh;
+    width: 20%;
+    background-color: #1e1e2e;
+}
+
+/* Profile picture circle */
+.leftChild .picture {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #2e2e3e;
+    border: 3px solid #6c63ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+}
+
+.leftChild .picture::after {
+    content: "👤";
+}
+
+/* Logout button */
+.leftChild .buttonWraper {
+    width: 100%;
+}
+
+.leftChild .buttonWraper button {
+    width: 100%;
+    padding: 10px;
+    background-color: transparent;
+    border: 1px solid #ff6b6b;
+    color: #ff6b6b;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.leftChild .buttonWraper button::before {
+    content: "🚪 ";
+}
+
+.leftChild .buttonWraper button:hover {
+    background-color: #ff6b6b;
+    color: #fff;
+}
+
+/* Menu */
+.leftChild .menu {
+    width: 100%;
+}
+
+.leftChild .menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.leftChild .menu ul li {
+    padding: 10px 16px;
+    border-radius: 8px;
+    color: #ccc;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.leftChild .menu ul li:hover {
+    background-color: #2e2e3e;
+    color: #fff;
+}
+
+.leftChild .menu ul li.selected {
+    background-color: #6c63ff;
+    color: #fff;
+    font-weight: 600;
 }

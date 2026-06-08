@@ -52,7 +52,9 @@ const rednerLeftChild = async ()=>{
 const renderDashboard = async () =>{}
 
 const renderUserPanel = async () => {
+    console.log("Render user panel")
     const users = await getAllUsers();
+    console.log(users.users);
 
     document.getElementsByClassName('rightChild')[0].innerHTML = `
         <div class="container mt-4">
@@ -735,15 +737,15 @@ const renderClassrooms = async () => {
 
 const renderLogin = () => {
     document.getElementsByClassName('rightChild')[0].innerHTML = `
-        <div id="loginError"></div>
-            <form>
-                <label>LOGIN:</label>
-                <label>username</label>
-                <input id="username" type="text">
-                <label>password</label>
-                <input id="password" type="password">
-                <button type="button" id="loginButton">Login</button>
-            </form>
+        <form>
+            <label>LOGIN:</label>
+            <label>username</label>
+            <input id="username" type="text">
+            <label>password</label>
+            <input id="password" type="password">
+            <button type="button" id="loginButton">Login</button>
+            <div id="loginError"></div>
+    </form>
     `;
 }
 
