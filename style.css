@@ -1,0 +1,49 @@
+.parent{
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+body{
+    
+    height: 100vh;
+}
+
+.leftChild{
+    background-color: blue;
+    width: 20%;
+}
+
+.rightChild{
+    background-color: white;
+    width: 80%;
+}
+
+.menu{
+
+}
+
+.selected{
+    color: white;
+
+}
+
+#logOut{
+
+}
+
+
+.menu > ul > li{
+
+}
+
+.picture{
+
+}
+
+.buttonWraper{
+    
+}
+
+.menu > ul > li:hover{
+    cursor: pointer;
+}
