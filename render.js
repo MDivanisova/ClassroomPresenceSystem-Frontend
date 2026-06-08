@@ -1,5 +1,6 @@
 import { getAllUsers, editUser, removeUser, register } from "./auth.api.js";
 import { getClassroom, editClassroom, removeClassroom, createClassroom } from "./classroom.api.js";
+import { getAttendance, endAttendance, removeAttendance, createAttendance } from "./attendance.api.js";
 import { getToken } from "./utils.js";
 
 const rednerLeftChild = async ()=>{
@@ -287,8 +288,244 @@ const renderUserPanel = async () => {
     });
 };
 
-const renderAttandances = async () =>{}
+const renderAttendances = async (page = 1, filters = {}) => {
+    const response = await getAttendance(page, 6, filters);
+    
+    const attendances = response.attendances;
+    const { totalPages, pageNumber, numAttendance, pageSize } = response.pagination;
 
+    document.getElementsByClassName('rightChild')[0].innerHTML = `
+        <div class="container mt-4">
+
+            <!-- Filters -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Teacher Name</label>
+                            <input type="text" class="form-control" id="filterTeacher" placeholder="Search by teacher..." value="${filters.teacher || ''}"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Classroom Type</label>
+                            <div class="d-flex gap-3 flex-wrap mt-1">
+                                ${['Лабараторија', 'Амфитеатар', 'Предавална'].map(type => `
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="classroomType" 
+                                            id="type_${type}" value="${type}"
+                                            ${filters.classroomType === type ? 'checked' : ''}/>
+                                        <label class="form-check-label" for="type_${type}">${type}</label>
+                                    </div>
+                                `).join('')}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="classroomType" 
+                                        id="type_all" value=""
+                                        ${!filters.classroomType ? 'checked' : ''}/>
+                                    <label class="form-check-label" for="type_all">All</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Date</label>
+                            <input type="date" class="form-control" id="filterDate" value="${filters.date || ''}"/>
+                        </div>
+                        <div class="col-md-1 d-flex gap-2">
+                            <button class="btn btn-primary w-100" id="applyFiltersBtn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary w-100" id="clearFiltersBtn">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                ${attendances.map(attendance => `
+                    <div class="col-md-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">${attendance.title}</h5>
+                                <hr/>
+                                <p class="card-text mb-1">
+                                    <i class="bi bi-calendar-check"></i>
+                                    <strong>Start:</strong> ${attendance.startOn ? new Date(attendance.startOn).toLocaleString() : 'N/A'}
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="bi bi-calendar-x"></i>
+                                    <strong>End:</strong> ${attendance.endOn ? new Date(attendance.endOn).toLocaleString() : 'Ongoing'}
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="bi bi-person"></i>
+                                    <strong>Organizer:</strong> ${attendance.organizer ? `${attendance.organizer.name} ${attendance.organizer.surname} (${attendance.organizer.email})` : 'N/A'}
+                                </p>
+                                <p class="card-text mb-1">
+                                    <i class="bi bi-door-open"></i>
+                                    <strong>Classroom:</strong> ${attendance.classroom ? `${attendance.classroom.type} - ${attendance.classroom.roomNumber}` : 'N/A'}
+                                </p>
+                                <p class="card-text">
+                                    <span class="badge ${attendance.endOn ? 'bg-secondary' : 'bg-success'}">
+                                        ${attendance.endOn ? 'Ended' : 'Active'}
+                                    </span>
+                                    <span class="badge bg-info text-dark">
+                                        ${attendance.participants ? attendance.participants.length : 0} participants
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">ID: ${attendance._id}</span>
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-info view-attendance-btn" data-id="${attendance._id}">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                    ${!attendance.endOn ? `
+                                    <button class="btn btn-sm btn-outline-warning end-attendance-btn" data-id="${attendance._id}">
+                                        <i class="bi bi-stop-circle"></i> End
+                                    </button>` : ''}
+                                    <button class="btn btn-sm btn-outline-danger delete-attendance-btn" data-id="${attendance._id}">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <span class="text-muted small">
+                    Showing page ${pageNumber} of ${totalPages} (${numAttendance} total)
+                </span>
+                <nav>
+                    <ul class="pagination mb-0">
+                        <li class="page-item ${pageNumber <= 1 ? 'disabled' : ''}">
+                            <button class="page-link" id="prevPageBtn">
+                                <i class="bi bi-chevron-left"></i> Prev
+                            </button>
+                        </li>
+                        ${Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
+                            <li class="page-item ${p === pageNumber ? 'active' : ''}">
+                                <button class="page-link page-num-btn" data-page="${p}">${p}</button>
+                            </li>
+                        `).join('')}
+                        <li class="page-item ${pageNumber >= totalPages ? 'disabled' : ''}">
+                            <button class="page-link" id="nextPageBtn">
+                                Next <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+        <!-- View Participants Modal -->
+        <div class="modal fade" id="viewParticipantsModal" tabindex="-1">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Participants</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div id="participantsList"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const viewParticipantsModal = new window.bootstrap.Modal(document.getElementById('viewParticipantsModal'));
+
+    // Apply filters
+    document.getElementById('applyFiltersBtn').addEventListener('click', () => {
+        const teacher = document.getElementById('filterTeacher').value.trim();
+        const classroomType = document.querySelector('input[name="classroomType"]:checked')?.value || '';
+        const date = document.getElementById('filterDate').value;
+        renderAttendances(1, { teacher, classroomType, date });
+    });
+
+    // Clear filters
+    document.getElementById('clearFiltersBtn').addEventListener('click', () => {
+        renderAttendances(1, {});
+    });
+
+    // Pagination
+    if (pageNumber > 1) {
+        document.getElementById('prevPageBtn').addEventListener('click', () => renderAttendances(pageNumber - 1, filters));
+    }
+    if (pageNumber < totalPages) {
+        document.getElementById('nextPageBtn').addEventListener('click', () => renderAttendances(pageNumber + 1, filters));
+    }
+    document.querySelectorAll('.page-num-btn').forEach(btn => {
+        btn.addEventListener('click', () => renderAttendances(Number(btn.dataset.page), filters));
+    });
+
+    // View participants
+    document.querySelectorAll('.view-attendance-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const attendanceID = btn.dataset.id;
+            const attendance = attendances.find(a => a._id === attendanceID);
+            const participants = attendance.participants || [];
+            document.getElementById('participantsList').innerHTML = participants.length === 0
+                ? `<p class="text-muted">No participants yet.</p>`
+                : `<table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Index</th>
+                                <th>Entered At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${participants.map((p, i) => `
+                                <tr>
+                                    <td>${i + 1}</td>
+                                    <td>${p.attendee ? `${p.attendee.name} ${p.attendee.surname}` : 'N/A'}</td>
+                                    <td>${p.attendee ? p.attendee.email : 'N/A'}</td>
+                                    <td>${p.attendee ? p.attendee.index : 'N/A'}</td>
+                                    <td>${p.enterIn ? new Date(p.enterIn).toLocaleString() : 'N/A'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>`;
+            viewParticipantsModal.show();
+        });
+    });
+
+    // End attendance
+    document.querySelectorAll('.end-attendance-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const attendanceID = btn.dataset.id;
+            if (!confirm("Are you sure you want to end this attendance?")) return;
+            const result = await endAttendance(attendanceID);
+            if (result.status === 200) {
+                await renderAttendances(pageNumber, filters);
+            } else {
+                alert("Failed to end attendance: " + result.msg);
+            }
+        });
+    });
+
+    // Delete attendance
+    document.querySelectorAll('.delete-attendance-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const attendanceID = btn.dataset.id;
+            if (!confirm("Are you sure you want to delete this attendance?")) return;
+            const result = await removeAttendance(attendanceID);
+            if (result.status === 200) {
+                await renderAttendances(pageNumber, filters);
+            } else {
+                alert("Failed to delete attendance: " + result.msg);
+            }
+        });
+    });
+};
 const renderClassrooms = async () => {
     const classrooms = await getClassroom();
     document.getElementsByClassName('rightChild')[0].innerHTML = `
@@ -520,7 +757,7 @@ const rednerRightChild = async (page)=>{
         
     }
     if(page === "Attendances"){
-    document.getElementsByClassName('rightChild')[0].innerHTML = "Attandances";
+        await renderAttendances();
         
     }
     if(page === "Classrooms"){

@@ -24,12 +24,16 @@ const createAttendance = async(classroomID, title)=>{
     return data;
 };
 
-const getAttendance = async()=>{
-
+const getAttendance = async(pageNumber = 1, pageSize = 6, filters = {})=>{
     const token = getToken();
-
-
-    const respons = await fetch(`${BACKEND_BASE_PATH}/attendance`,{
+    const params = new URLSearchParams({
+        pageSize,
+        pageNumber,
+        ...(filters.teacher && { teacher: filters.teacher }),
+        ...(filters.classroomType && { classroom: filters.classroomType }),
+        ...(filters.date && { date: filters.date }),
+    });
+    const respons = await fetch(`${BACKEND_BASE_PATH}/attendance?${params}`,{
         method: "GET",
         headers: {
             'Content-Type': 'application/json',
@@ -38,7 +42,6 @@ const getAttendance = async()=>{
     });
     let data = await respons.json();
     data.status = respons.status;
-
     return data;
 };
 
