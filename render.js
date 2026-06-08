@@ -59,8 +59,8 @@ const renderDashboard = async () => {
             <div class="row g-3 mb-4">
                 <div class="col-md-4">
                     <div class="p-4 rounded-3 text-center shadow-sm" style="background:#fff; border:1px solid #e0e0e0;">
-                        <div id="todayCount" style="font-size:2.5rem; font-weight:700; color:#6c63ff;">...</div>
-                        <div style="color:#888; margin-top:6px;">📅 Attendances Today</div>
+                        <div id="todayCount" style="font-size:2.5rem; font-weight:700; color:rgb(70, 119, 160)">...</div>
+                        <div style="color:rgb(70, 119, 160); margin-top:6px;">📅 Attendances Today</div>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -81,16 +81,16 @@ const renderDashboard = async () => {
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="p-3 rounded-3 shadow-sm" style="background:#fff; border:1px solid #e0e0e0;">
-                        <h6 class="mb-3 text-center text-muted">Participants by Classroom Type</h6>
-                        <div id="pieChartWrapper" class="d-flex justify-content-center align-items-center" style="min-height:200px;">
+                        <h6 class="mb-3 text-center text-muted">Top 5 Professors by Attendances</h6>
+                        <div id="barChartWrapper" class="d-flex justify-content-center align-items-center" style="min-height:200px;">
                             <div class="spinner-border text-secondary" role="status"></div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="p-3 rounded-3 shadow-sm" style="background:#fff; border:1px solid #e0e0e0;">
-                        <h6 class="mb-3 text-center text-muted">Top 5 Professors by Attendances</h6>
-                        <div id="barChartWrapper" class="d-flex justify-content-center align-items-center" style="min-height:200px;">
+                        <h6 class="mb-3 text-center text-muted">Participants by Classroom Type</h6>
+                        <div id="pieChartWrapper" class="d-flex justify-content-center align-items-center" style="min-height:200px;">
                             <div class="spinner-border text-secondary" role="status"></div>
                         </div>
                     </div>
@@ -104,6 +104,8 @@ const renderDashboard = async () => {
                     </div>
                 </div>
             </div>
+            <div class="row g-3">
+            
         </div>
     `;
 
@@ -144,7 +146,7 @@ const renderDashboard = async () => {
                 labels: Object.keys(typeMap),
                 datasets: [{
                     data: Object.values(typeMap),
-                    backgroundColor: ['#6c63ff', '#43b89c', '#ff6b6b'],
+                    backgroundColor: ['rgb(70, 119, 160)', '#43b89c', '#ff6b6b'],
                     borderWidth: 2,
                 }]
             },
@@ -170,7 +172,7 @@ const renderDashboard = async () => {
                 datasets: [{
                     label: 'Attendances Created',
                     data: top5Profs.map(p => p[1]),
-                    backgroundColor: '#6c63ff',
+                    backgroundColor: 'rgb(70, 119, 160)',
                     borderRadius: 6,
                 }]
             },
@@ -234,10 +236,16 @@ const renderDashboard = async () => {
 
 const renderUserPanel = async () => {
 
+    document.getElementsByClassName('rightChild')[0].innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="min-height:100vh;">
+            <div class="spinner-border text-primary" role="status" style="width:3rem; height:3rem;"></div>
+        </div>
+    `;
+
     const users = await getAllUsers();
 
     document.getElementsByClassName('rightChild')[0].innerHTML = `
-        <div class="container mt-4">
+        <div class="container-fluid p-4" style="min-height:100vh;">
             <div class="row g-3">
 
                 <!-- Add New User Card -->
@@ -472,13 +480,19 @@ const renderUserPanel = async () => {
 };
 
 const renderAttendances = async (page = 1, filters = {}) => {
+    // Show spinner immediately
+    document.getElementsByClassName('rightChild')[0].innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="min-height:100vh;">
+            <div class="spinner-border text-primary" role="status" style="width:3rem; height:3rem;"></div>
+        </div>
+    `;
+
     const response = await getAttendance(page, 6, filters);
-    
     const attendances = response.attendances;
     const { totalPages, pageNumber, numAttendance, pageSize } = response.pagination;
 
     document.getElementsByClassName('rightChild')[0].innerHTML = `
-        <div class="container mt-4">
+        <div class="container-fluid p-4" style="min-height:100vh;">
 
             <!-- Filters -->
             <div class="card mb-4 shadow-sm">
@@ -576,7 +590,7 @@ const renderAttendances = async (page = 1, filters = {}) => {
             </div>
 
             <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center mt-4">
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-4">
                 <span class="text-muted small">
                     Showing page ${pageNumber} of ${totalPages} (${numAttendance} total)
                 </span>
@@ -623,7 +637,7 @@ const renderAttendances = async (page = 1, filters = {}) => {
 
     const viewParticipantsModal = new window.bootstrap.Modal(document.getElementById('viewParticipantsModal'));
 
-    //filters
+    // Filters
     document.getElementById('applyFiltersBtn').addEventListener('click', () => {
         const teacher = document.getElementById('filterTeacher').value.trim();
         const classroomType = document.querySelector('input[name="classroomType"]:checked')?.value || '';
@@ -709,10 +723,18 @@ const renderAttendances = async (page = 1, filters = {}) => {
         });
     });
 };
+
 const renderClassrooms = async () => {
+
+    document.getElementsByClassName('rightChild')[0].innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="min-height:100vh;">
+            <div class="spinner-border text-primary" role="status" style="width:3rem; height:3rem;"></div>
+        </div>
+    `;
+
     const classrooms = await getClassroom();
     document.getElementsByClassName('rightChild')[0].innerHTML = `
-        <div class="container mt-4">
+        <div class="container-fluid p-4" style="min-height:100vh;">
             <div class="row g-3">
                 <!-- Add New Classroom Card -->
                 <div class="col-md-4">
@@ -732,7 +754,7 @@ const renderClassrooms = async () => {
                                 <h6 class="card-subtitle mb-2 text-muted">Floor ${classroom.floor}</h6>
                                 <hr/>
                                 <p class="card-text mb-1">
-                                    <i class="bi bi-building"></i> ${classroom.campus}
+                                    <i class="bi bi-building"></i>Campus ${classroom.campus}
                                 </p>
                                 <p class="card-text">
                                     <span class="badge bg-secondary">${classroom.type}</span>

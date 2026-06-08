@@ -3,10 +3,7 @@
     flex-direction: row;
     height: 100%;
 }
-body{
-    
-    height: 100vh;
-}
+
 
 
 /* rightChild layout */
@@ -63,14 +60,14 @@ body{
 }
 
 .rightChild form input:focus {
-    border-color: #6c63ff;
+    border-color: rgb(25, 70, 107);
 }
 
 /* Login button */
 .rightChild form button#loginButton {
     margin-top: 8px;
     padding: 12px;
-    background-color: #6c63ff;
+    background-color: rgb(25, 70, 107);
     color: #fff;
     border: none;
     border-radius: 8px;
@@ -81,7 +78,7 @@ body{
 }
 
 .rightChild form button#loginButton:hover {
-    background-color: #574fd6;
+    background-color: rgb(25, 70, 107);
 }
 
 /* Error message */
@@ -112,7 +109,7 @@ body{
     height: 120px;
     border-radius: 50%;
     background-color: rgba(0, 0, 0, 0.856);
-    border: 3px solid #6c63ff;
+    border: 3px solid rgb(25, 70, 107);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -156,6 +153,10 @@ body{
     color: #fff;
 }
 
+.leftChild{
+  background-color: rgb(7, 2, 70); /* For browsers that do not support gradients */
+  background-image: linear-gradient(to bottom, rgb(10, 27, 73), rgb(25, 70, 107));
+}
 /* Menu */
 .leftChild .menu {
     width: 100%;
@@ -184,7 +185,7 @@ body{
 }
 
 .leftChild .menu ul li.selected {
-    background-color: #6c63ff;
+    background-color: rgb(34, 88, 133);
     color: #fff;
     font-weight: 600;
 }
