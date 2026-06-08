@@ -108,10 +108,10 @@ body{
 
 /* Profile picture circle */
 .leftChild .picture {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
-    background-color: #2e2e3e;
+    background-color: rgba(0, 0, 0, 0.856);
     border: 3px solid #6c63ff;
     display: flex;
     align-items: center;
@@ -123,6 +123,13 @@ body{
     content: "👤";
 }
 
+.leftChild .welcome{
+    font-style: oblique;
+    font-weight: bold;
+    font-size: 3.0rem;
+    color: rgba(0, 0, 0, 0.87);
+}
+
 /* Logout button */
 .leftChild .buttonWraper {
     width: 100%;
@@ -132,8 +139,8 @@ body{
     width: 100%;
     padding: 10px;
     background-color: transparent;
-    border: 1px solid #ff6b6b;
-    color: #ff6b6b;
+    border: 1px solid #4e0000;
+    color: #c92e2e;
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.95rem;
@@ -145,7 +152,7 @@ body{
 }
 
 .leftChild .buttonWraper button:hover {
-    background-color: #ff6b6b;
+    background-color: #c92e2e   ;
     color: #fff;
 }
 
@@ -172,7 +179,7 @@ body{
 }
 
 .leftChild .menu ul li:hover {
-    background-color: #2e2e3e;
+    background-color: rgba(0, 0, 0, 0.87);
     color: #fff;
 }
 

@@ -6,6 +6,7 @@ import { getToken } from "./utils.js";
 const rednerLeftChild = async ()=>{
     document.getElementsByClassName('leftChild')[0].innerHTML = `
         <div class="picture"></div>
+        <label class ="welcome">Welcome</label>
         <div class="buttonWraper">
             <button id="logOut">Log out</button>
         </div>
@@ -18,7 +19,7 @@ const rednerLeftChild = async ()=>{
             </ul>
         </div>
     `;
-
+    
     document.getElementById('logOut').addEventListener('click',()=>{
         localStorage.removeItem('token');
         window.location.reload();
@@ -49,16 +50,196 @@ const rednerLeftChild = async ()=>{
     }
 }
 
-const renderDashboard = async () =>{}
+const renderDashboard = async () => {
+    // Show skeleton immediately
+    document.getElementsByClassName('rightChild')[0].innerHTML = `
+        <div class="container-fluid p-4" style="min-height:100vh;">
+
+            <!-- Stat Cards -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="p-4 rounded-3 text-center shadow-sm" style="background:#fff; border:1px solid #e0e0e0;">
+                        <div id="todayCount" style="font-size:2.5rem; font-weight:700; color:#6c63ff;">...</div>
+                        <div style="color:#888; margin-top:6px;">📅 Attendances Today</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 rounded-3 text-center shadow-sm" style="background:#fff; border:1px solid #e0e0e0;">
+                        <div id="weekCount" style="font-size:2.5rem; font-weight:700; color:#43b89c;">...</div>
+                        <div style="color:#888; margin-top:6px;">📆 Attendances This Week</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 rounded-3 text-center shadow-sm" style="background:#fff; border:1px solid #e0e0e0;">
+                        <div id="monthCount" style="font-size:2.5rem; font-weight:700; color:#ff6b6b;">...</div>
+                        <div style="color:#888; margin-top:6px;">🗓️ Attendances This Month</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 shadow-sm" style="background:#fff; border:1px solid #e0e0e0;">
+                        <h6 class="mb-3 text-center text-muted">Participants by Classroom Type</h6>
+                        <div id="pieChartWrapper" class="d-flex justify-content-center align-items-center" style="min-height:200px;">
+                            <div class="spinner-border text-secondary" role="status"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 shadow-sm" style="background:#fff; border:1px solid #e0e0e0;">
+                        <h6 class="mb-3 text-center text-muted">Top 5 Professors by Attendances</h6>
+                        <div id="barChartWrapper" class="d-flex justify-content-center align-items-center" style="min-height:200px;">
+                            <div class="spinner-border text-secondary" role="status"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 rounded-3 shadow-sm" style="background:#fff; border:1px solid #e0e0e0;">
+                        <h6 class="mb-3 text-center text-muted">Arrival vs Start Time (minutes late)</h6>
+                        <div id="scatterChartWrapper" class="d-flex justify-content-center align-items-center" style="min-height:200px;">
+                            <div class="spinner-border text-secondary" role="status"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+    const weekAgo = new Date(); weekAgo.setDate(today.getDate() - 7);
+    const weekAgoStr = weekAgo.toISOString().split('T')[0];
+    const monthAgo = new Date(); monthAgo.setMonth(today.getMonth() - 1);
+    const monthAgoStr = monthAgo.toISOString().split('T')[0];
+
+    // Load stat cards independently
+    getAttendance(1, 1, { date: todayStr }).then(data => {
+        document.getElementById('todayCount').innerText = data.pagination?.numAttendance ?? 0;
+    });
+    getAttendance(1, 1, { date: weekAgoStr }).then(data => {
+        document.getElementById('weekCount').innerText = data.pagination?.numAttendance ?? 0;
+    });
+    getAttendance(1, 1, { date: monthAgoStr }).then(data => {
+        document.getElementById('monthCount').innerText = data.pagination?.numAttendance ?? 0;
+    });
+
+    // Load charts independently one by one
+    getAttendance(1, 500, {}).then(allData => {
+        const allAttendances = allData.attendances ?? [];
+
+        // Pie chart
+        const typeMap = { 'Предавална': 0, 'Амфитеатар': 0, 'Лабараторија': 0 };
+        allAttendances.forEach(a => {
+            const type = a.classroom?.type;
+            if (type && typeMap[type] !== undefined) {
+                typeMap[type] += a.participants?.length ?? 0;
+            }
+        });
+        document.getElementById('pieChartWrapper').innerHTML = `<canvas id="pieChart"></canvas>`;
+        new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(typeMap),
+                datasets: [{
+                    data: Object.values(typeMap),
+                    backgroundColor: ['#6c63ff', '#43b89c', '#ff6b6b'],
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                plugins: { legend: { labels: { color: '#555' } } }
+            }
+        });
+
+        // Bar chart
+        const profMap = {};
+        allAttendances.forEach(a => {
+            if (a.organizer) {
+                const key = `${a.organizer.name} ${a.organizer.surname}`;
+                profMap[key] = (profMap[key] || 0) + 1;
+            }
+        });
+        const top5Profs = Object.entries(profMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        document.getElementById('barChartWrapper').innerHTML = `<canvas id="barChart"></canvas>`;
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: top5Profs.map(p => p[0]),
+                datasets: [{
+                    label: 'Attendances Created',
+                    data: top5Profs.map(p => p[1]),
+                    backgroundColor: '#6c63ff',
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                plugins: { legend: { labels: { color: '#555' } } },
+                scales: {
+                    x: { ticks: { color: '#555' }, grid: { color: '#eee' } },
+                    y: { ticks: { color: '#555', stepSize: 1 }, grid: { color: '#eee' } }
+                }
+            }
+        });
+
+        // Scatter chart
+        const scatterPoints = [];
+        allAttendances.forEach(a => {
+            if (!a.startOn) return;
+            const startOn = new Date(a.startOn);
+            (a.participants ?? []).forEach(p => {
+                if (p.enterIn) {
+                    const diffMinutes = Math.round((new Date(p.enterIn) - startOn) / 60000);
+                    const name = p.attendee ? `${p.attendee.name} ${p.attendee.surname}` : 'N/A';
+                    scatterPoints.push({ x: diffMinutes, label: name });
+                }
+            });
+        });
+        document.getElementById('scatterChartWrapper').innerHTML = `<canvas id="scatterChart"></canvas>`;
+        new Chart(document.getElementById('scatterChart'), {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Minutes late',
+                    data: scatterPoints.map((p, i) => ({ x: i, y: p.x })),
+                    backgroundColor: scatterPoints.map(p => p.x > 0 ? '#ff6b6b' : '#43b89c'),
+                    pointRadius: 5,
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { labels: { color: '#555' } },
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) => {
+                                const p = scatterPoints[ctx.dataIndex];
+                                return `${p.label}: ${p.x > 0 ? '+' : ''}${p.x} min`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { display: false },
+                    y: {
+                        ticks: { color: '#555', callback: v => `${v} min` },
+                        grid: { color: '#eee' },
+                        title: { display: true, text: 'Minutes late', color: '#888' }
+                    }
+                }
+            }
+        });
+    });
+};
 
 const renderUserPanel = async () => {
-    console.log("Render user panel")
+
     const users = await getAllUsers();
-    console.log(users.users);
 
     document.getElementsByClassName('rightChild')[0].innerHTML = `
         <div class="container mt-4">
             <div class="row g-3">
+
                 <!-- Add New User Card -->
                 <div class="col-md-4">
                     <div class="card shadow-sm h-100 border-dashed" id="addUserCard" style="cursor:pointer; border: 2px dashed #adb5bd;">
@@ -442,7 +623,7 @@ const renderAttendances = async (page = 1, filters = {}) => {
 
     const viewParticipantsModal = new window.bootstrap.Modal(document.getElementById('viewParticipantsModal'));
 
-    // Apply filters
+    //filters
     document.getElementById('applyFiltersBtn').addEventListener('click', () => {
         const teacher = document.getElementById('filterTeacher').value.trim();
         const classroomType = document.querySelector('input[name="classroomType"]:checked')?.value || '';
@@ -547,7 +728,7 @@ const renderClassrooms = async () => {
                     <div class="col-md-4">
                         <div class="card shadow-sm h-100">
                             <div class="card-body">
-                                <h5 class="card-title">Room ${classroom.roomNumber}</h5>
+                                <h5 class="card-title">Room number: ${classroom.roomNumber}</h5>
                                 <h6 class="card-subtitle mb-2 text-muted">Floor ${classroom.floor}</h6>
                                 <hr/>
                                 <p class="card-text mb-1">
@@ -749,10 +930,9 @@ const renderLogin = () => {
     `;
 }
 
-
 const rednerRightChild = async (page)=>{
     if(page === "Dashboard"){
-        document.getElementsByClassName('rightChild')[0].innerHTML = "Dashboard";
+        await renderDashboard();
     }
     if(page === "User Panel"){
         await renderUserPanel();    
@@ -777,6 +957,7 @@ const renderContent = async () => {
         renderLogin();
     }
 }
+
 
 
 export{
