@@ -425,7 +425,8 @@ const renderUserPanel = async () => {
             registerModal.hide();
             await renderUserPanel();
         } else {
-            document.getElementById('registerError').innerText =  result.error[0].message || "Failed to create user.";
+            document.getElementById('registerError').innerText =  "Failed to create user: " && (result.error ? result.error[0].message :result.msg);
+            
         }
     });
 
@@ -468,13 +469,13 @@ const renderUserPanel = async () => {
         const email = document.getElementById('editEmail').value;
         const username = document.getElementById('editUsername').value;
         const role = document.getElementById('editRole').value;
-
+        
         const result = await editUser(userID, index, name, surname, email, username, role);
         if (result.status === 200) {
             editModal.hide();
             await renderUserPanel();
         } else {
-            alert("Failed to update user: " + result.error[0].message);
+            alert("Failed to update user: " + (result.error ? result.error[0].message : result.msg));
         }
     });
 };
@@ -885,7 +886,7 @@ const renderClassrooms = async () => {
             createClassroomModal.hide();
             await renderClassrooms();
         } else {
-            document.getElementById('createClassroomError').innerText = result.error[0].message || "Failed to create classroom.";
+            document.getElementById('createClassroomError').innerText = "Failed to create classroom: " && (result.error ? result.error[0].message :result.msg);
         }
     });
 
@@ -933,7 +934,7 @@ const renderClassrooms = async () => {
             editClassroomModal.hide();
             await renderClassrooms();
         } else {
-            document.getElementById('editClassroomError').innerText = result.error[0].message || "Failed to update classroom.";
+            document.getElementById('editClassroomError').innerText = "Failed to update classroom: " && (result.error ? result.error[0].message :result.msg);
         }
     });
 };
