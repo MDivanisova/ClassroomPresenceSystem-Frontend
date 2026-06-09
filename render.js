@@ -505,7 +505,7 @@ const renderAttendances = async (page = 1, filters = {}) => {
                         <div class="col-md-4">
                             <label class="form-label fw-semibold">Classroom Type</label>
                             <div class="d-flex gap-3 flex-wrap mt-1">
-                                ${['Лабараторија', 'Амфитеатар', 'Предавална'].map(type => `
+                                ${['Лабораторија', 'Амфитеатар', 'Предавална'].map(type => `
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="classroomType" 
                                             id="type_${type}" value="${type}"
